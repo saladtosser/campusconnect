@@ -21,6 +21,7 @@ import EventDetail from './pages/events/EventDetail';
 import Profile from './pages/user/Profile';
 import MyRegistrations from './pages/user/MyRegistrations';
 import QRCode from './pages/user/QRCode';
+import AttendanceConfirmation from './pages/user/AttendanceConfirmation';
 
 // Admin pages
 import Dashboard from './pages/admin/Dashboard';
@@ -31,6 +32,8 @@ import AdminUserList from './pages/admin/users/UserList';
 import AdminUserDetail from './pages/admin/users/UserDetail';
 import AdminRegistrationList from './pages/admin/registrations/RegistrationList';
 import CheckInScanner from './pages/admin/registrations/CheckInScanner';
+import EventQRCode from './pages/admin/EventQRCode';
+import EventAttendees from './pages/admin/events/EventAttendees';
 
 // Not found page
 import NotFound from './pages/NotFound';
@@ -55,6 +58,7 @@ function App() {
           <Route path="profile" element={<Profile />} />
           <Route path="my-registrations" element={<MyRegistrations />} />
           <Route path="registrations/:id/qr-code" element={<QRCode />} />
+          <Route path="confirm-attendance" element={<AttendanceConfirmation />} />
         </Route>
 
         {/* Admin routes */}
@@ -64,6 +68,8 @@ function App() {
           <Route path="admin/events/new" element={<AdminEventForm />} />
           <Route path="admin/events/:id" element={<AdminEventDetail />} />
           <Route path="admin/events/:id/edit" element={<AdminEventForm />} />
+          <Route path="admin/events/:id/qr-code" element={<EventQRCode />} />
+          <Route path="admin/events/:id/attendees" element={<EventAttendees />} />
           <Route path="admin/users" element={<AdminUserList />} />
           <Route path="admin/users/:id" element={<AdminUserDetail />} />
           <Route path="admin/registrations" element={<AdminRegistrationList />} />

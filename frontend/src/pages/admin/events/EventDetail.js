@@ -9,6 +9,8 @@ import Card from '../../../components/ui/Card';
 import Alert from '../../../components/ui/Alert';
 import Loading from '../../../components/ui/Loading';
 import Badge from '../../../components/ui/Badge';
+import QrCodeIcon from '@mui/icons-material/QrCode';
+import PeopleIcon from '@mui/icons-material/People';
 
 // Helper function to safely format dates
 const formatDate = (dateString, formatString) => {
@@ -85,6 +87,22 @@ const AdminEventDetail = () => {
             variant="outline"
           >
             Back to Events
+          </Button>
+          <Button
+            variant="outlined"
+            startIcon={<QrCodeIcon />}
+            onClick={() => navigate(`/admin/events/${id}/qr-code`)}
+            sx={{ mr: 1 }}
+          >
+            Event QR Code
+          </Button>
+          <Button
+            variant="outlined"
+            startIcon={<PeopleIcon />}
+            onClick={() => navigate(`/admin/events/${id}/attendees`)}
+            sx={{ mr: 1 }}
+          >
+            View Attendees
           </Button>
         </div>
       </div>

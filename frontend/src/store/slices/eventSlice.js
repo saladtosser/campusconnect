@@ -150,6 +150,39 @@ export const deleteEvent = createAsyncThunk(
   }
 );
 
+// Generate QR code for event (admin only)
+export const generateEventQRCode = createAsyncThunk(
+  'events/generateQRCode',
+  async (eventId, thunkAPI) => {
+    try {
+      const token = localStorage.getItem('token');
+      
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+      
+      const response = await axios.post(
+        `${API_URL}/events/${eventId}/qr-code/`,
+        {},
+        config
+      );
+      
+      return response.data;
+    } catch (error) {
+      const message = 
+        (error.response && 
+          error.response.data && 
+          error.response.data.message) ||
+        error.message ||
+        error.toString();
+        
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
 export const eventSlice = createSlice({
   name: 'events',
   initialState,
@@ -230,6 +263,22 @@ export const eventSlice = createSlice({
         state.events = state.events.filter((event) => event.id !== action.payload);
       })
       .addCase(deleteEvent.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload;
+      })
+      // Generate QR code
+      .addCase(generateEventQRCode.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(generateEventQRCode.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.success = true;
+        if (state.event && state.event.id === action.meta.arg) {
+          state.event.qr_code = action.payload.qr_code;
+          state.event.qr_code_generated_at = action.payload.qr_code_generated_at;
+        }
+      })
+      .addCase(generateEventQRCode.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload;
       });

@@ -372,6 +372,80 @@ export const rejectRegistration = createAsyncThunk(
   }
 );
 
+// Confirm attendance with event QR code
+export const confirmAttendance = createAsyncThunk(
+  'registrations/confirmAttendance',
+  async ({ eventQRCode, attendanceCode }, thunkAPI) => {
+    try {
+      const token = localStorage.getItem('token');
+      
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+      
+      const data = {
+        event_qr_code: eventQRCode,
+      };
+      
+      // Add attendance code if provided (required for guest users)
+      if (attendanceCode) {
+        data.attendance_code = attendanceCode;
+      }
+      
+      const response = await axios.post(
+        `${API_URL}/registrations/confirm-attendance/`,
+        data,
+        config
+      );
+      
+      return response.data;
+    } catch (error) {
+      const message = 
+        (error.response && 
+          error.response.data && 
+          error.response.data.detail) ||
+        error.message ||
+        error.toString();
+        
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
+// Add a function to fetch registrations for a specific event
+export const getEventRegistrations = createAsyncThunk(
+  'registrations/getEventRegistrations',
+  async (eventId, thunkAPI) => {
+    try {
+      const token = localStorage.getItem('token');
+      
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+      
+      const response = await axios.get(
+        `${API_URL}/registrations/admin/event/${eventId}/`,
+        config
+      );
+      
+      return response.data;
+    } catch (error) {
+      const message = 
+        (error.response && 
+          error.response.data && 
+          error.response.data.detail) ||
+        error.message ||
+        error.toString();
+        
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
 export const registrationSlice = createSlice({
   name: 'registrations',
   initialState,
@@ -536,6 +610,37 @@ export const registrationSlice = createSlice({
         );
       })
       .addCase(rejectRegistration.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload;
+      })
+      // Confirm attendance with event QR code
+      .addCase(confirmAttendance.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(confirmAttendance.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.success = true;
+        // Update the registration in the state
+        const registration = action.payload.registration;
+        state.registrations = state.registrations.map((reg) =>
+          reg.id === registration.id ? registration : reg
+        );
+        state.currentRegistration = registration;
+      })
+      .addCase(confirmAttendance.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload;
+      })
+      // Get event registrations
+      .addCase(getEventRegistrations.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(getEventRegistrations.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.success = true;
+        state.registrations = action.payload;
+      })
+      .addCase(getEventRegistrations.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload;
       });

@@ -1,5 +1,8 @@
+import uuid
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django.utils import timezone
+from datetime import timedelta
 
 
 class Event(models.Model):
@@ -13,6 +16,8 @@ class Event(models.Model):
     capacity = models.PositiveIntegerField(_('capacity'), blank=True, null=True)
     active = models.BooleanField(_('active'), default=True)
     background_image = models.ImageField(_('background image'), upload_to='events/', blank=True, null=True)
+    qr_code = models.CharField(_('QR code'), max_length=255, unique=True, blank=True, null=True)
+    qr_code_generated_at = models.DateTimeField(_('QR code generated at'), blank=True, null=True)
     created_at = models.DateTimeField(_('created at'), auto_now_add=True)
     updated_at = models.DateTimeField(_('updated at'), auto_now=True)
 
@@ -23,6 +28,7 @@ class Event(models.Model):
         indexes = [
             models.Index(fields=['start_time']),
             models.Index(fields=['active']),
+            models.Index(fields=['qr_code']),
         ]
 
     def __str__(self):
@@ -46,4 +52,20 @@ class Event(models.Model):
         """Calculate the number of available spots."""
         if self.capacity is None:
             return None
-        return max(0, self.capacity - self.registrations.count()) 
+        return max(0, self.capacity - self.registrations.count())
+    
+    @property
+    def is_qr_code_valid(self):
+        """Check if the QR code is still valid (not expired)."""
+        if not self.qr_code_generated_at:
+            return False
+        # QR codes expire after 10 minutes
+        expiration_time = self.qr_code_generated_at + timedelta(minutes=10)
+        return timezone.now() < expiration_time
+    
+    def generate_qr_code(self):
+        """Generate a new QR code for the event."""
+        self.qr_code = str(uuid.uuid4())
+        self.qr_code_generated_at = timezone.now()
+        self.save(update_fields=['qr_code', 'qr_code_generated_at'])
+        return self.qr_code 

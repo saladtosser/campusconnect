@@ -4,9 +4,9 @@ from .views import (
     RegistrationCreateView,
     RegistrationDetailView,
     RegistrationCancelView,
-    RegistrationQRCodeView,
-    CheckInView,
-    AdminRegistrationListView
+    AttendanceConfirmView,
+    AdminRegistrationListView,
+    EventRegistrationsView
 )
 
 urlpatterns = [
@@ -14,7 +14,7 @@ urlpatterns = [
     path('create/', RegistrationCreateView.as_view(), name='registration-create'),
     path('<int:pk>/', RegistrationDetailView.as_view(), name='registration-detail'),
     path('<int:pk>/cancel/', RegistrationCancelView.as_view(), name='registration-cancel'),
-    path('<int:pk>/qr-code/', RegistrationQRCodeView.as_view(), name='registration-qr-code'),
-    path('check-in/', CheckInView.as_view(), name='registration-check-in'),
+    path('confirm-attendance/', AttendanceConfirmView.as_view(), name='confirm-attendance'),
     path('admin/', AdminRegistrationListView.as_view(), name='admin-registration-list'),
+    path('admin/event/<int:event_id>/', EventRegistrationsView.as_view(), name='event-registrations'),
 ] 

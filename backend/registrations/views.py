@@ -10,7 +10,7 @@ from .serializers import (
     RegistrationSerializer, 
     RegistrationCreateSerializer, 
     RegistrationListSerializer,
-    CheckInSerializer
+    AttendanceConfirmSerializer
 )
 from events.models import Event
 from events.views import IsAdminUser
@@ -100,24 +100,34 @@ class RegistrationQRCodeView(APIView):
         return HttpResponse(buffer, content_type="image/png")
 
 
-class CheckInView(APIView):
-    """View for checking in a registration."""
+class AttendanceConfirmView(APIView):
+    """View for confirming attendance using event QR code."""
     
-    permission_classes = [permissions.IsAuthenticated, IsAdminUser]
+    permission_classes = [permissions.IsAuthenticated]
     
     def post(self, request):
-        serializer = CheckInSerializer(data=request.data)
+        serializer = AttendanceConfirmSerializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         
-        qr_code = serializer.validated_data['qr_code']
-        registration = get_object_or_404(Registration, qr_code=qr_code)
+        event_qr_code = serializer.validated_data['event_qr_code']
+        attendance_code = serializer.validated_data.get('attendance_code', '')
         
-        registration.check_in()
-        
-        return Response(
-            RegistrationSerializer(registration).data,
-            status=status.HTTP_200_OK
+        registration, message = Registration.confirm_attendance(
+            event_qr_code=event_qr_code,
+            user=request.user,
+            attendance_code=attendance_code
         )
+        
+        if not registration:
+            return Response(
+                {"detail": message},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        return Response({
+            "registration": RegistrationSerializer(registration).data,
+            "message": message
+        })
 
 
 class AdminRegistrationListView(generics.ListAPIView):
@@ -141,3 +151,14 @@ class AdminRegistrationListView(generics.ListAPIView):
             queryset = queryset.filter(status=status)
         
         return queryset 
+
+
+class EventRegistrationsView(generics.ListAPIView):
+    """View for listing registrations for a specific event (admin only)."""
+    
+    serializer_class = RegistrationSerializer
+    permission_classes = [permissions.IsAuthenticated, IsAdminUser]
+    
+    def get_queryset(self):
+        event_id = self.kwargs.get('event_id')
+        return Registration.objects.filter(event_id=event_id).select_related('admin_user', 'event') 

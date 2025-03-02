@@ -108,6 +108,48 @@
 
 ---
 
+## 🆕 <span style="color:#FF00FF">NEW FEATURE: EVENT QR CODE ATTENDANCE SYSTEM</span>
+
+<table>
+<tr>
+<td width="70%">
+
+### How It Works
+CampusConnect now features a streamlined attendance verification system:
+
+1. **Admin-Generated QR Codes** - Administrators generate unique QR codes for each event
+2. **Effortless Scanning** - Attendees scan event QR codes to confirm their attendance
+3. **Guest User Support** - Special one-time use codes for guest attendees
+4. **Real-time Verification** - Instant attendance confirmation and status updates
+
+The new system eliminates check-in bottlenecks and provides a contactless registration experience.
+
+</td>
+<td>
+
+```
+┌───────────────────────┐
+│                       │
+│   ██████████████████  │
+│   ██              ██  │
+│   ██  ██████████  ██  │
+│   ██  ██      ██  ██  │
+│   ██  ██      ██  ██  │
+│   ██  ██      ██  ██  │
+│   ██  ██████████  ██  │
+│   ██              ██  │
+│   ██████████████████  │
+│                       │
+│    SCAN TO ATTEND     │
+└───────────────────────┘
+```
+
+</td>
+</tr>
+</table>
+
+---
+
 ## 🔧 <span style="color:#00FFFF">TECH STACK</span>
 
 <table>

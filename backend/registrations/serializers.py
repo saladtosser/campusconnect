@@ -10,17 +10,15 @@ class RegistrationSerializer(serializers.ModelSerializer):
     
     event = EventSerializer(read_only=True)
     admin_user = AdminUserSerializer(read_only=True)
-    is_qr_code_valid = serializers.BooleanField(read_only=True)
     
     class Meta:
         model = Registration
         fields = [
             'id', 'event', 'admin_user', 'status', 'checked_in_at',
-            'qr_code', 'qr_code_expires_at', 'created_at', 'updated_at',
-            'is_qr_code_valid'
+            'attendance_code', 'created_at', 'updated_at'
         ]
         read_only_fields = [
-            'id', 'event', 'admin_user', 'qr_code', 'qr_code_expires_at',
+            'id', 'event', 'admin_user', 'attendance_code',
             'created_at', 'updated_at', 'checked_in_at'
         ]
 
@@ -84,32 +82,24 @@ class RegistrationListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Registration
         fields = [
-            'id', 'event', 'status', 'checked_in_at',
-            'created_at'
+            'id', 'event', 'status', 'checked_in_at', 
+            'attendance_code', 'created_at'
         ]
 
 
-class CheckInSerializer(serializers.Serializer):
-    """Serializer for checking in a registration."""
+class AttendanceConfirmSerializer(serializers.Serializer):
+    """Serializer for confirming attendance."""
     
-    qr_code = serializers.CharField(required=True)
+    event_qr_code = serializers.CharField(required=True)
+    attendance_code = serializers.CharField(required=False, allow_blank=True)
     
-    def validate_qr_code(self, value):
-        try:
-            registration = Registration.objects.get(qr_code=value)
-        except Registration.DoesNotExist:
-            raise serializers.ValidationError("Invalid QR code.")
+    def validate(self, attrs):
+        user = self.context['request'].user
+        event_qr_code = attrs.get('event_qr_code')
+        attendance_code = attrs.get('attendance_code')
         
-        # Check if QR code is expired
-        if not registration.is_qr_code_valid:
-            raise serializers.ValidationError("QR code has expired.")
+        # For guest users, attendance code is required
+        if user.role == 'guest' and not attendance_code:
+            raise serializers.ValidationError({"attendance_code": "Attendance code is required for guest users."})
         
-        # Check if registration is already checked in
-        if registration.status == 'checked_in':
-            raise serializers.ValidationError("Already checked in.")
-        
-        # Check if registration is cancelled
-        if registration.status == 'cancelled':
-            raise serializers.ValidationError("Registration has been cancelled.")
-        
-        return value 
+        return attrs 

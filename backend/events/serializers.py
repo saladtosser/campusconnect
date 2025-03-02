@@ -8,15 +8,19 @@ class EventSerializer(serializers.ModelSerializer):
     is_past = serializers.BooleanField(read_only=True)
     is_full = serializers.BooleanField(read_only=True)
     available_spots = serializers.IntegerField(read_only=True)
+    is_qr_code_valid = serializers.BooleanField(read_only=True)
     
     class Meta:
         model = Event
         fields = [
             'id', 'name', 'description', 'location', 'start_time', 'end_time',
             'capacity', 'active', 'background_image', 'created_at', 'updated_at',
-            'is_past', 'is_full', 'available_spots'
+            'is_past', 'is_full', 'available_spots', 'qr_code', 'qr_code_generated_at',
+            'is_qr_code_valid'
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        read_only_fields = [
+            'id', 'created_at', 'updated_at', 'qr_code', 'qr_code_generated_at'
+        ]
     
     def validate(self, attrs):
         # Validate that end_time is after start_time
